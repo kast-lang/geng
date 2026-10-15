@@ -6,11 +6,13 @@
     nixpkgs-25-11.url = "github:NixOS/nixpkgs/nixos-25.11";
     kast.url = "github:kast-lang/kast/bootstrap-ocaml";
     flake-utils.url = "github:numtide/flake-utils";
+    nix-filter.url = "github:numtide/nix-filter";
   };
 
   outputs = inputs:
     inputs.flake-utils.lib.eachDefaultSystem (system:
       let
+        nix-filter = inputs.nix-filter.lib;
         pkgs-25-11 = import inputs.nixpkgs-25-11 { inherit system; };
         pkgs = import inputs.nixpkgs { inherit system; };
         emscripten = pkgs-25-11.emscripten;
@@ -96,12 +98,38 @@
         ];
       in
       {
+        packages = rec {
+          default = geng;
+          geng = pkgs.stdenv.mkDerivation {
+            name = "geng";
+            src = nix-filter {
+              root = ./.;
+              include = [ "assets" "deps" "src" "geng.sh" ];
+            };
+            buildPhase = ''
+              cat >>geng.sh <<"EOF"
+              export GENG_PATH=$(realpath $(dirname $0)/..)
+              ${pkgs.just}/bin/just --justfile=${./.justfile} --working-directory=. "$@"
+              EOF
+            '';
+            installPhase = ''
+              install -d $out/bin
+              install geng.sh $out/bin/geng
+              cp -r deps $out/deps
+              cp -r src $out/src
+              cp -r assets $out/assets
+            '';
+            propagatedBuildInputs = [
+              kast
+            ] ++ c_libs;
+          };
+        };
         devShells.default = with pkgs;
           mkShell
             {
               packages = [
                 (pkgs.writeShellScriptBin "kast" ''
-                  systemd-run --user --scope -p MemoryMax=10G \
+                  systemd-run --user --scope -p memorymax=10g \
                     rlwrap ${kast}/bin/kast "$@"
                 '')
                 rlwrap
@@ -112,10 +140,10 @@
                 tinycc
                 emscripten
               ] ++ c_libs;
-              SDL3_WEB = "${sdl3-web}";
-              SDL3_IMAGE_WEB = "${sdl3-image-web}";
-              SDL3_MIXER_WEB = "${sdl3-mixer-web}";
-              # LSAN_OPTIONS = "suppresions=suppr.txt";
+              sdl3_web = "${sdl3-web}";
+              sdl3_image_web = "${sdl3-image-web}";
+              sdl3_mixer_web = "${sdl3-mixer-web}";
+              # lsan_options = "suppresions=suppr.txt";
             };
       });
 }

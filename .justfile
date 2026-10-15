@@ -1,7 +1,7 @@
 default:
     echo "Hi"
 
-build-c source="src/main.ks" output="target/compiled/main.c":
+transpile-to-c source="src/main.ks" output="target/compiled/main.c":
     mkdir -p $(dirname {{output}})
     echo "#define SDL_MAIN_HANDLED 1" > {{output}}
     ${KAST_BIN:-kast} compile \
@@ -12,7 +12,7 @@ build-c source="src/main.ks" output="target/compiled/main.c":
 
 [arg("sanitize", long, value="true")]
 [arg("opt_level", short="O")]
-build-native source="target/compiled/main.c" opt_level="1" sanitize="":
+compile-exe source="target/compiled/main.c" opt_level="1" sanitize="":
     #!/usr/bin/env bash
     if [ -z "$KAST_PATH" ]; then
         KAST_ARGS="-lkast"
@@ -65,9 +65,16 @@ build-emscripten source="target/compiled/main.c":
     # -s ASYNCIFY \
     # -s ASYNCIFY_STACK_SIZE=64MB \
 
-build src:
-    just build-c {{src}}
-    just build-native
+build src="src/main.ks":
+    just transpile-to-c {{src}}
+    just compile-exe
+
+dist:
+    rm -rf target/dist
+    mkdir -p target/dist
+    cp target/compiled/main.exe target/dist/main.exe
+    cp -r assets target/dist/assets
+    cp -r $GENG_PATH/assets target/dist/assets/geng
 
 run *args:
     ./target/compiled/main.exe --connect 15.204.212.176:5555 {{args}}
@@ -78,3 +85,7 @@ serve:
     just build-emscripten
     caddy run
 
+set positional-arguments
+exec program *args:
+    echo $GENG_PATH
+    exec "$@"

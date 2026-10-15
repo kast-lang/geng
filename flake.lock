@@ -79,11 +79,11 @@
         "opam-repository": "opam-repository"
       },
       "locked": {
-        "lastModified": 1791971133,
-        "narHash": "sha256-+RzXilkZuVoA4c1IFsU4Vc03NvaiHoUXOoySGVYAycY=",
+        "lastModified": 1792075477,
+        "narHash": "sha256-/0A6VzhbDQQ7PlNvJCfFM0MAnVeyEECr5TIlQq5JCWc=",
         "owner": "kast-lang",
         "repo": "kast",
-        "rev": "085d7d5bb839646a8248032d11a512ef8765d413",
+        "rev": "c0f073488b75bc66bea03f24b0a4a78241e630f8",
         "type": "github"
       },
       "original": {
@@ -116,6 +116,21 @@
         "owner": "numtide",
         "repo": "nix-filter",
         "rev": "59c44d1909c72441144b93cf0f054be7fe764de5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "nix-filter",
+        "type": "github"
+      }
+    },
+    "nix-filter_2": {
+      "locked": {
+        "lastModified": 1791915028,
+        "narHash": "sha256-/vtxTQyuha8ssLhL5a1zsHoZM8R5gwWXZNun5CG+DrQ=",
+        "owner": "numtide",
+        "repo": "nix-filter",
+        "rev": "f54d82f341662c8b5c3ae92e614fe0a8c256b995",
         "type": "github"
       },
       "original": {
@@ -261,6 +276,7 @@
       "inputs": {
         "flake-utils": "flake-utils",
         "kast": "kast",
+        "nix-filter": "nix-filter_2",
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-25-11": "nixpkgs-25-11"
       }

@@ -177,7 +177,7 @@ impl Font as module = (
                 tile_pos.0 += 1;
             );
         );
-        let program = geng.load_shader("assets/shaders/font");
+        let program = geng.load_shader(&format!("\(assets_path())/shaders/font") |> as_str);
         let uniforms = include_ast ugli.calculate_uniforms(
             `(program),
             Uniforms,

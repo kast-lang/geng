@@ -41,8 +41,14 @@ const log = println;
 const Options = newtype {
     .title :: &str,
     .vsync :: Bool,
-    .geng_assets :: &str,
 };
+
+const assets_path = () -> String => (
+    match std.sys.get_env("GENG_PATH") with (
+        | :Some path => format!("\(path)/assets")
+        | :None => format!("assets/geng")
+    )
+);
 
 const init = (...options :: Options) -> ContextT => (
     log!("Initializing");
@@ -72,7 +78,7 @@ const init = (...options :: Options) -> ContextT => (
     log!("Initialized ugli");
 
     let quad = {
-        .program = load_shader(&format!("\(options.geng_assets)/shaders/quad") |> as_str),
+        .program = load_shader(&format!("\(assets_path())/shaders/quad") |> as_str),
         .buffer = (
             let mut data :: ArrayList.t[Vertex] = ArrayList.new();
             ArrayList.push_back(
@@ -106,7 +112,7 @@ const init = (...options :: Options) -> ContextT => (
             ugli.VertexBuffer.init(&data)
         ),
     };
-    let font = Font.load(&format!("\(options.geng_assets)/font") |> as_str);
+    let font = Font.load(&format!("\(assets_path())/font") |> as_str);
     ugli.check_error();
     {
         .window,
