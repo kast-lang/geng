@@ -1,0 +1,10 @@
+/.direnv/
+/target/
+/result
+*.zip
+*.exe
+*.dll
+perf*
+*.mtl
+*.blend[0-9]*
+*.blend~
