@@ -1,3 +1,5 @@
+set positional-arguments
+
 default:
     echo "Hi"
 
@@ -66,8 +68,8 @@ build-emscripten source="target/compiled/main.c":
     # -s ASYNCIFY_STACK_SIZE=64MB \
 
 build src="src/main.ks":
-    just transpile-to-c {{src}}
-    just compile-exe
+    geng transpile-to-c {{src}}
+    geng compile-exe
 
 dist:
     rm -rf target/dist
@@ -77,15 +79,13 @@ dist:
     cp -r $GENG_PATH/assets target/dist/assets/geng
 
 run *args:
-    ./target/compiled/main.exe --connect 15.204.212.176:5555 {{args}}
-    # ./target/compiled/main.exe --server 127.0.0.1:1235 --connect 127.0.0.1:1235
+    ./target/compiled/main.exe {{args}}
 
 serve:
-    just build-c
-    just build-emscripten
+    geng build-c
+    geng build-emscripten
     caddy run
 
-set positional-arguments
 exec program *args:
     echo $GENG_PATH
     exec "$@"

@@ -90,8 +90,8 @@ impl Mat4 as module = (
         near :: Float32,
         far :: Float32,
     ) -> Mat4 => (
-        let ymax = near * math.tan(fov.radians / 2);
-        let xmax = ymax * aspect;
+        let xmax = near * math.tan(fov.radians / 2);
+        let ymax = xmax / aspect;
         frustum(
             .left = -xmax,
             .right = xmax,

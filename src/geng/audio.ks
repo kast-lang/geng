@@ -52,10 +52,10 @@ impl Effect as module = (
     );
 );
 
-const play_with = (buffer :: Buffer, options :: PlayOptions) -> Effect => (
+const play_with = (buffer :: &Buffer, options :: PlayOptions) -> Effect => (
     let ctx = (@current Context);
     let track = SDL.MIX.CreateTrack(ctx.mixer);
-    SDL.MIX.SetTrackAudio(track, buffer.audio);
+    SDL.MIX.SetTrackAudio(track, buffer^.audio);
     SDL.MIX.SetTrackGain(track, options.volume);
     # This one doesnt work
     # SDL.MIX.SetTrackLoops(track, if options.@"loop" then (-1) else 0);
@@ -68,7 +68,7 @@ const play_with = (buffer :: Buffer, options :: PlayOptions) -> Effect => (
     { .track }
 );
 
-const play = (buffer :: Buffer) -> Effect => (
+const play = (buffer :: &Buffer) -> Effect => (
     play_with(buffer, PlayOptions.default())
 );
 
@@ -81,13 +81,17 @@ const Buffer = newtype {
     .audio :: SDL.MIX.Audio,
 };
 
-const load = (path :: &str) -> Buffer => (
-    let ctx = (@current Context);
-    let audio = SDL.MIX.LoadAudio(ctx.mixer, path, true);
-    { .audio }
+impl Buffer as module = (
+    module:
+
+    const load = (path :: &str) -> Buffer => (
+        let ctx = (@current Context);
+        let audio = SDL.MIX.LoadAudio(ctx.mixer, path, true);
+        { .audio }
+    );
 );
 
 impl Buffer as asset.Load = {
-    .load,
+    .load = Buffer.load,
     .default_ext = :Some "wav",
 };
