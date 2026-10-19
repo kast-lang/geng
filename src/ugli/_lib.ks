@@ -401,7 +401,7 @@ impl Mat3 as Uniform = {
         add(row => row.0);
         add(row => row.1);
         add(row => row.2);
-        @native "glUniformMatrix3fv(\(location), 1, \(false), \(list).buf)";
+        @native "glUniformMatrix3fv(\(location), 1, \(false), \(@unsafe_copy list).buf)";
     ),
 };
 
@@ -418,7 +418,7 @@ impl Mat4 as Uniform = {
         add(row => row.1);
         add(row => row.2);
         add(row => row.3);
-        @native "glUniformMatrix4fv(\(location), 1, \(false), \(list).buf)";
+        @native "glUniformMatrix4fv(\(location), 1, \(false), \(@unsafe_copy list).buf)";
     ),
 };
 
