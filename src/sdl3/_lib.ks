@@ -364,9 +364,8 @@ const EnterAppMainCallbacks = [A :: Type] (app_impl :: App[A]) => (
         let &@context = &mut context;
         let app_impl = STORE_APP_IMPL |> Option.unwrap;
         let app_impl :: &App[A] = @native "\(app_impl)";
-        let app_impl = app_impl^;
         let app_state :: &mut A = @native "\(app_state)";
-        app_impl.iterate(app_state)
+        app_impl^.iterate(app_state)
             |> AppResult.into_raw
     );
     const event_callback = [A] fn @call "C" (

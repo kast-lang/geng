@@ -96,6 +96,13 @@
           libunwind
           kast-c-runtime
         ];
+        compilers = with pkgs; [
+          just
+          caddy
+          clang
+          tinycc
+          emscripten
+        ];
       in
       {
         packages = rec {
@@ -109,6 +116,11 @@
             buildPhase = ''
               cat >>geng.sh <<"EOF"
               export GENG_PATH=$(realpath $(dirname $0)/..)
+              export KAST_PATH=${kast}
+              export SDL3_WEB=${sdl3-web}
+              export SDL3_IMAGE_WEB=${sdl3-image-web}
+              export SDL3_MIXER_WEB=${sdl3-mixer-web}
+              export PATH="${pkgs.lib.makeBinPath compilers}:$PATH"
               ${pkgs.just}/bin/just --justfile=${./.justfile} --working-directory=. "$@"
               EOF
             '';
@@ -134,12 +146,7 @@
                 '')
                 rlwrap
                 nixfmt
-                just
-                caddy
-                clang
-                tinycc
-                emscripten
-              ] ++ c_libs;
+              ] ++ compilers ++ c_libs;
               sdl3_web = "${sdl3-web}";
               sdl3_image_web = "${sdl3-image-web}";
               sdl3_mixer_web = "${sdl3-mixer-web}";

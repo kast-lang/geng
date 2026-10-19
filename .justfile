@@ -56,6 +56,7 @@ build-emscripten source="target/compiled/main.c":
         -O3 \
         --use-preload-plugins \
         --preload-file assets \
+        --preload-file $GENG_PATH/assets@assets/geng \
         -s TOTAL_STACK=64MB \
         -s INITIAL_MEMORY=512MB \
         -s ALLOW_MEMORY_GROWTH \
