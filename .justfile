@@ -82,10 +82,44 @@ dist:
 run *args:
     ./target/compiled/main.exe {{args}}
 
+build-tcc:
+    CC=tcc geng build-podman
+
+build-podman:
+    podman build -t notnix $GENG_PATH/docker
+    podman run -it \
+        -e CC=$CC \
+        -v $KAST_PATH:/kast:ro \
+        -e KAST_PATH=/kast \
+        -v $GENG_PATH:/geng:ro \
+        -e GENG_PATH=/geng \
+        -v $(pwd):/src -w /src \
+        notnix \
+        just --justfile=/geng/.justfile --working-directory=/src compile-exe
+
+run-podman *args:
+    xhost +local:users
+    podman run -it \
+        --env DISPLAY=$DISPLAY \
+        -e PULSE_SERVER=unix:/tmp/pulse/native \
+        -e PULSE_COOKIE=/tmp/pulse/cookie \
+        -v $XDG_RUNTIME_DIR/pulse/native:/tmp/pulse/native:ro \
+        -v ~/.config/pulse/cookie:/tmp/pulse/cookie:ro \
+        -e XDG_RUNTIME_DIR=/tmp/runtime \
+        --volume /tmp/.X11-unix:/tmp/.X11-unix \
+        --device /dev/dri \
+        --device /dev/kfd \
+        --group-add keep-groups \
+        -v $XDG_RUNTIME_DIR/pipewire-0:/tmp/runtime/pipewire-0:ro \
+        -v $GENG_PATH:/geng:ro \
+        -e GENG_PATH=/geng \
+        -v $(pwd):/src -w /src \
+        notnix \
+        ./target/compiled/main.exe {{args}}
+
+
 serve:
-    geng build-c
-    geng build-emscripten
-    caddy run
+    caddy run --config $GENG_PATH/Caddyfile
 
 exec program *args:
     echo $GENG_PATH

@@ -111,7 +111,7 @@
             name = "geng";
             src = nix-filter {
               root = ./.;
-              include = [ "assets" "deps" "src" "geng.sh" ];
+              include = [ "assets" "deps" "src" "docker" ".justfile" "Caddyfile" "geng.sh" ];
             };
             buildPhase = ''
               cat >>geng.sh <<"EOF"
@@ -130,6 +130,9 @@
               cp -r deps $out/deps
               cp -r src $out/src
               cp -r assets $out/assets
+              cp -r docker $out/docker
+              cp -r Caddyfile $out/Caddyfile
+              cp -r .justfile $out/.justfile
             '';
             propagatedBuildInputs = [
               kast
