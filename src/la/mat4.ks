@@ -84,14 +84,29 @@ impl Mat4 as module = (
         { 0, 0, 0, 1 },
     };
 
+    const PerspectiveFov = newtype (
+        | :Vertical Angle
+        | :Horizontal Angle
+    );
+
     const perspective = (
-        fov :: Angle,
+        fov :: PerspectiveFov,
         aspect :: Float32,
         near :: Float32,
         far :: Float32,
     ) -> Mat4 => (
-        let xmax = near * math.tan(fov.radians / 2);
-        let ymax = xmax / aspect;
+        let { xmax, ymax } :: { _, _ } = match fov with (
+            | :Horizontal fov => (
+                let xmax = near * math.tan(fov.radians / 2);
+                let ymax = xmax / aspect;
+                { xmax, ymax }
+            )
+            | :Vertical fov => (
+                let ymax = near * math.tan(fov.radians / 2);
+                let xmax = ymax * aspect;
+                { xmax, ymax }
+            )
+        );
         frustum(
             .left = -xmax,
             .right = xmax,

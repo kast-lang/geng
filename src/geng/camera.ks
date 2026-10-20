@@ -7,8 +7,10 @@ const Camera = newtype {
     .distance :: Float32,
     .rotation :: Angle,
     .attack :: Angle,
-    .fov :: Angle,
+    .fov :: CameraFov,
 };
+
+const CameraFov = Mat4.PerspectiveFov;
 
 const CameraUniforms = newtype {
     .view_matrix :: Mat4,
