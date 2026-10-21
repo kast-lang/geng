@@ -24,6 +24,7 @@ compile-exe opt_level="1" sanitize="" *sources="target/compiled/main.c":
     fi
     set -x
     ${CC:-gcc} \
+        ${CFLAGS} \
         {{sources}} \
         -o target/compiled/main.exe \
         $KAST_ARGS \
