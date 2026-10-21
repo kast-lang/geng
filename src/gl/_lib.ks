@@ -1,4 +1,4 @@
-use (import "../c.ks").*;
+use std.target.c.*;
 
 module:
 
@@ -190,9 +190,9 @@ const get_attrib_location = (
     program :: Program,
     name :: &str,
 ) -> Option.t[AttribLocation] => (
-    let name = C_String_from_str(name);
+    let name = C_String.from_str(name);
     let location = @native "glGetAttribLocation(\(program), \(name))";
-    C_String_drop(name);
+    C_String.drop(name);
     if @native "\(location) == -1" then (
         :None
     ) else (
@@ -204,9 +204,9 @@ const get_uniform_location = (
     program :: Program,
     name :: &str,
 ) -> Option.t[UniformLocation] => (
-    let name = C_String_from_str(name);
+    let name = C_String.from_str(name);
     let location = @native "glGetUniformLocation(\(program), \(name))";
-    C_String_drop(name);
+    C_String.drop(name);
     if @native "\(location) == -1" then (
         :None
     ) else (

@@ -11,6 +11,5 @@ const Game = newtype {};
 
 geng.run[Game](
     .title = "Geng Example",
-    .geng_assets = "assets",
     .vsync = true,
 );

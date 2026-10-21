@@ -1,6 +1,6 @@
 module:
 
-use (import "./c.ks").*;
+use std.target.c.*;
 const la = import "./la/_lib.ks";
 use la.*;
 
