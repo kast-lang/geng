@@ -14,7 +14,7 @@ transpile-to-c source="src/main.ks" output="target/compiled/main.c":
 
 [arg("sanitize", long, value="true")]
 [arg("opt_level", short="O")]
-compile-exe source="target/compiled/main.c" opt_level="1" sanitize="":
+compile-exe opt_level="1" sanitize="" *sources="target/compiled/main.c":
     #!/usr/bin/env bash
     if [ -z "$KAST_PATH" ]; then
         KAST_ARGS="-lkast"
@@ -22,8 +22,9 @@ compile-exe source="target/compiled/main.c" opt_level="1" sanitize="":
         KAST_ARGS="-I${KAST_PATH}/c-runtime/include"
         KAST_ARGS="$KAST_ARGS ${KAST_PATH}/c-runtime/src/*.c"
     fi
+    set -x
     ${CC:-gcc} \
-        {{source}} \
+        {{sources}} \
         -o target/compiled/main.exe \
         $KAST_ARGS \
         -I. \
