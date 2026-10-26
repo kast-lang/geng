@@ -191,8 +191,8 @@ const get_attrib_location = (
     name :: &str,
 ) -> Option.t[AttribLocation] => (
     let name = C_String.from_str(name);
+    @defer C_String.drop(name);
     let location = @native "glGetAttribLocation(\(program), \(name))";
-    C_String.drop(name);
     if @native "\(location) == -1" then (
         :None
     ) else (
@@ -205,8 +205,8 @@ const get_uniform_location = (
     name :: &str,
 ) -> Option.t[UniformLocation] => (
     let name = C_String.from_str(name);
+    @defer C_String.drop(name);
     let location = @native "glGetUniformLocation(\(program), \(name))";
-    C_String.drop(name);
     if @native "\(location) == -1" then (
         :None
     ) else (

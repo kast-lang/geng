@@ -65,6 +65,7 @@ const CreateWindow = (
     window_flags :: WindowFlags,
 ) -> Window => (
     let title = C_String.from_str(title);
+    @defer C_String.drop(title);
     let window = @native ''
         SDL_CreateWindow(
             \(title),
@@ -73,7 +74,6 @@ const CreateWindow = (
             \(window_flags)
         )
     '';
-    C_String.drop(title);
     if @native "\(window) == NULL" then (
         throw_error("SDL_CreateWindow");
     );
@@ -169,8 +169,8 @@ const IMG = (
     const Load = (path :: &str) -> Surface => (
         @native "#include <SDL3_image/SDL_image.h>";
         let path = C_String.from_str(path);
+        @defer C_String.drop(path);
         let surface = @native "IMG_Load(\(path))";
-        C_String.drop(path);
         if @native "\(surface) == NULL" then (
             throw_error("IMG_Load");
         );
@@ -212,8 +212,8 @@ const MIX = (
         predecode :: Bool,
     ) -> Audio => (
         let path = C_String.from_str(path);
+        @defer C_String.drop(path);
         let audio = @native "MIX_LoadAudio(\(mixer), \(path), \(predecode))";
-        C_String.drop(path);
         if @native "\(audio) == NULL" then (
             throw_error("MIX_LoadAudio");
         );
