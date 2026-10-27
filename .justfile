@@ -41,6 +41,7 @@ build-emscripten source="target/compiled/main.c":
     rm -rf target/web
     mkdir -p target/web
     emcc {{source}} \
+        ${EMCC_FLAGS} \
         -I${KAST_PATH}/c-runtime/include \
         ${KAST_PATH}/c-runtime/src/*.c \
         -I. \
