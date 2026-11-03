@@ -14,7 +14,7 @@ const UInt64_to_Float32 = (x :: UInt64) -> Float32 => @native "\(x)";
 const Float64_to_Float32 = (x :: Float64) -> Float32 => @native "\(x)";
 const Float32_to_Int32 = (x :: Float32) -> Int32 => @native "(Int32)\(x)";
 
-const is_emscripten = () -> Bool => @native ''
+const is_emscripten = () -> Bool => @native ''\n
     #ifdef __EMSCRIPTEN__
         true
     #else
@@ -23,7 +23,7 @@ const is_emscripten = () -> Bool => @native ''
 '';
 
 const yield = () => (
-    @native ''
+    @native ''\n
         #if defined(__EMSCRIPTEN__) && defined(GC_ON_INTERVAL_EMSCRIPTEN)
             emscripten_sleep(0)
         #else
