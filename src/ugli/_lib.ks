@@ -127,7 +127,6 @@ const calculate_uniforms = (program :: std.Ast, T :: Type) -> std.Ast => @cfg (
 );
 
 const Program = newtype {
-    .ctx :: gl.ContextT,
     .handle :: gl.Program,
     .attributes :: OrdMap.t[String, AttributeInfo],
     .uniforms :: OrdMap.t[String, Box[ExistingUniformInfo]],
@@ -149,7 +148,6 @@ impl Program as module = (
         vertex_shader :: gl.Shader,
         fragment_shader :: gl.Shader,
     ) -> Program => (
-        let ctx = @current gl.Context;
         let program = gl.create_program();
         gl.attach_shader(program, vertex_shader);
         gl.attach_shader(program, fragment_shader);
@@ -199,7 +197,6 @@ impl Program as module = (
             );
         );
         {
-            .ctx,
             .handle = program,
             .attributes,
             .uniforms,
