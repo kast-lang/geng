@@ -362,6 +362,12 @@ const Uniform = [Self] newtype {
     .set :: (gl.UniformLocation, Self, &mut DrawState) -> (),
 };
 
+impl Int32 as Uniform = {
+    .set = (location, x, state) => (
+        @native "glUniform1i(\(location), \(x))";
+    ),
+};
+
 impl Float32 as Uniform = {
     .set = (location, x, state) => (
         @native "glUniform1f(\(location), \(x))";
