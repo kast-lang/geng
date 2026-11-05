@@ -129,7 +129,7 @@ const calculate_uniforms = (program :: std.Ast, T :: Type) -> std.Ast => @cfg (
 const Program = newtype {
     .handle :: gl.Program,
     .attributes :: OrdMap.t[String, AttributeInfo],
-    .uniforms :: OrdMap.t[String, Box[ExistingUniformInfo]],
+    .uniforms :: OrdMap.t[String, Box.t[ExistingUniformInfo]],
 };
 
 impl Program as module = (
@@ -193,7 +193,7 @@ impl Program as module = (
             };
             &mut uniforms |> OrdMap.add(
                 String.clone(&uniform_info.raw.name),
-                Box_new(uniform_info)
+                Box.new(uniform_info)
             );
         );
         {

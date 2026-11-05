@@ -338,7 +338,7 @@ const EnterAppMainCallbacks = [A :: Type] (app_impl :: App[A]) => (
     const void_star_star = @opaque_type "void**";
     const mut STORE_APP_IMPL :: Option.t[void_star] = :None;
     STORE_CONTEXT = :Some (@context);
-    let app_impl = Box_leak(Box_new(app_impl));
+    let app_impl = Box.leak(Box.new(app_impl));
     STORE_APP_IMPL = :Some (@native "(void*)\(app_impl)");
     const init_callback = [A] fn @call "C" (
         app_state :: void_star_star,
@@ -351,8 +351,8 @@ const EnterAppMainCallbacks = [A :: Type] (app_impl :: App[A]) => (
         let &@context = &mut context;
         let app_impl = STORE_APP_IMPL |> Option.unwrap;
         let app_impl :: &App[A] = @native "\(app_impl)";
-        let mut initialized_app = Box_new(app_impl^.init());
-        @native "*\(app_state) = (void*) \(Box_leak(initialized_app))";
+        let mut initialized_app = Box.new(app_impl^.init());
+        @native "*\(app_state) = (void*) \(Box.leak(initialized_app))";
         @native "SDL_APP_CONTINUE"
     );
     const iterate_callback = [A] fn @call "C" (
@@ -391,8 +391,8 @@ const EnterAppMainCallbacks = [A :: Type] (app_impl :: App[A]) => (
         let mut context = STORE_CONTEXT |> Option.unwrap;
         let &@context = &mut context;
         let app_impl = STORE_APP_IMPL |> Option.unwrap;
-        let app_impl :: Box[App[A]] = @native "Box_\(type (App[A]))_from_raw(\(app_impl), \(App[A]))";
-        let app_state :: Box[A] = @native "Box_\(type A)_from_raw(\(app_state), \(A))";
+        let app_impl :: Box.t[App[A]] = @native "Box_\(type (App[A]))_from_raw(\(app_impl), \(App[A]))";
+        let app_state :: Box.t[A] = @native "Box_\(type A)_from_raw(\(app_state), \(A))";
         app_impl^.quit(app_state^, result |> AppResult.from_raw);
     );
     @native ''
