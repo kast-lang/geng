@@ -143,8 +143,8 @@ const Surface = @opaque_type "SDL_Surface*";
 
 const PixelFormat = @opaque_type "SDL_PixelFormat";
 
-const ConvertSurface = (surface :: Surface, format :: PixelFormat) -> Surface => (
-    let result = @native "SDL_ConvertSurface(\(surface), \(format))";
+const ConvertSurface = (surface :: &Surface, format :: PixelFormat) -> Surface => (
+    let result = @native "SDL_ConvertSurface(\(surface^), \(format))";
     if @native "\(result) == NULL" then (
         throw_error("SDL_ConvertSurface");
     );
@@ -157,10 +157,20 @@ const DestroySurface = (surface :: Surface) => (
 
 const FlipMode = @opaque_type "SDL_FlipMode";
 
-const FlipSurface = (surface :: Surface, mode :: FlipMode) => (
-    if @native "!SDL_FlipSurface(\(surface), \(mode))" then (
+const FlipSurface = (surface :: &mut Surface, mode :: FlipMode) => (
+    if @native "!SDL_FlipSurface(\(surface^), \(mode))" then (
         throw_error("SDL_FlipSurface");
     );
+);
+
+const IOStream = @opaque_type "SDL_IOStream*";
+
+const IOFromConstMem = (data :: Slice.t[Byte]) => (
+    let stream = @native "SDL_IOFromConstMem(\(data).array, \(data).length)";
+    if @native "\(stream) == NULL" then (
+        throw_error("SDL_IOFromConstMem");
+    );
+    stream
 );
 
 const IMG = (
@@ -173,6 +183,24 @@ const IMG = (
         let surface = @native "IMG_Load(\(path))";
         if @native "\(surface) == NULL" then (
             throw_error("IMG_Load");
+        );
+        surface
+    );
+
+    const Load_IO = (src :: IOStream, closeio :: Bool) => (
+        let surface = @native "IMG_Load_IO(\(src), \(closeio))";
+        if @native "\(surface) == NULL" then (
+            throw_error("IMG_Load_IO");
+        );
+        surface
+    );
+
+    const LoadTyped_IO = (src :: IOStream, closeio :: Bool, @"type" :: &str) => (
+        let type_c = C_String.from_str(@"type");
+        @defer C_String.drop(type_c);
+        let surface = @native "IMG_LoadTyped_IO(\(src), \(closeio), \(type_c))";
+        if @native "\(surface) == NULL" then (
+            throw_error("IMG_LoadTyped_IO");
         );
         surface
     );

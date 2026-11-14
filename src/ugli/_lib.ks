@@ -238,9 +238,10 @@ impl Texture as module = (
     module:
 
     const init = (
-        image :: SDL.Surface,
+        rgba_image :: &SDL.Surface,
         filter :: Filter,
     ) -> Texture => (
+        let image = rgba_image^;
         let handle = gl.create_texture();
         gl.bind_texture(gl.TEXTURE_2D, handle);
         if is_emscripten() then (
@@ -300,16 +301,23 @@ impl Texture as module = (
         filter :: Filter,
     ) -> Texture => (
         let surface = SDL.IMG.Load(path);
-        let rgba_surface = SDL.ConvertSurface(
+        @defer SDL.DestroySurface(surface);
+        from_sdl_surface(&surface, filter)
+    );
+
+    const from_sdl_surface = (
+        surface :: &SDL.Surface,
+        filter :: Filter,
+    ) -> Texture => (
+        let mut rgba_surface = SDL.ConvertSurface(
             surface,
             @native "SDL_PIXELFORMAT_RGBA32",
         );
-        SDL.DestroySurface(surface);
+        @defer SDL.DestroySurface(rgba_surface);
         if not is_emscripten() then (
-            SDL.FlipSurface(rgba_surface, @native "SDL_FLIP_VERTICAL");
+            SDL.FlipSurface(&mut rgba_surface, @native "SDL_FLIP_VERTICAL");
         );
-        let texture = Texture.init(rgba_surface, filter);
-        SDL.DestroySurface(rgba_surface);
+        let texture = Texture.init(&rgba_surface, filter);
         texture
     );
 
