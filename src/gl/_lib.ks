@@ -222,6 +222,15 @@ const draw_arrays = (
     @native "glDrawArrays(\(mode), \(first), \(count))";
 );
 
+const draw_elements = (
+    mode :: GLenum,
+    count :: GLsizei,
+    @"type" :: GLenum,
+    indices :: const_void_star,
+) -> () => (
+    @native "glDrawElements(\(mode), \(count), \(@"type"), \(indices))";
+);
+
 const viewport = (
     x :: GLint,
     y :: GLint,
