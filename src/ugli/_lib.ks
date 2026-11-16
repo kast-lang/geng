@@ -234,8 +234,70 @@ impl Wrap as module = (
     );
 );
 
+const Vec2i = newtype { Int32, Int32 };
+const Color = Vec4;
+
 impl Texture as module = (
     module:
+
+    const new_with = (
+        { width, height } :: Vec2i,
+        color :: Vec2i -> Color,
+        filter :: Filter,
+    ) -> Texture => (
+        let handle = gl.create_texture();
+        gl.bind_texture(gl.TEXTURE_2D, handle);
+        gl.tex_parameter_i(
+            gl.TEXTURE_2D,
+            gl.TEXTURE_MIN_FILTER,
+            UInt32_to_Int32(gl.LINEAR),
+        );
+        match filter with (
+            | :Linear => ()
+            | :Nearest => (
+                gl.tex_parameter_i(
+                    gl.TEXTURE_2D,
+                    gl.TEXTURE_MAG_FILTER,
+                    UInt32_to_Int32(gl.NEAREST),
+                );
+            )
+        );
+        let mut data = ArrayList.with_capacity(Int32_to_UInt32(width * height));
+        for y in 0..height do (
+            for x in 0..width do (
+                &mut data |> ArrayList.push_back(color({ x, y }));
+            );
+        );
+        gl.tex_image_2d(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            width,
+            height,
+            0,
+            gl.RGBA,
+            gl.FLOAT,
+            @native "\(&data)->buf",
+        );
+        # gl.generate_mipmap(gl.TEXTURE_2D);
+        gl.tex_parameter_i(
+            gl.TEXTURE_2D,
+            gl.TEXTURE_WRAP_S,
+            UInt32_to_Int32(gl.CLAMP_TO_EDGE),
+        );
+        gl.tex_parameter_i(
+            gl.TEXTURE_2D,
+            gl.TEXTURE_WRAP_T,
+            UInt32_to_Int32(gl.CLAMP_TO_EDGE),
+        );
+        {
+            .size = {
+                Int32_to_Float32(width),
+                Int32_to_Float32(height),
+            },
+            .handle,
+        }
+    );
 
     const init = (
         rgba_image :: &SDL.Surface,

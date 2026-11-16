@@ -126,26 +126,23 @@ const init = (...options :: Options) -> ContextT => (
 const draw_quad = (
     .pos :: Vec2,
     .half_size :: Vec2,
-    .texture :: ugli.Texture,
+    .texture :: &ugli.Texture,
 ) => (
-    panic("TODO DRAW QUAD");
-    @comment_out (
-        let ref ctx = @current Context;
-        let ref camera = @current CameraCtx;
-        let program = &ctx.quad.program;
-        program |> ugli.Program.@"use";
+    let ref ctx = @current Context;
+    let ref camera = @current CameraUniforms.Ctx;
+    let program = &ctx^.quad.program;
+    program |> ugli.Program.@"use";
 
-        let mut draw_state = ugli.DrawState.init();
-        let draw_state = &mut draw_state;
+    let mut draw_state = ugli.DrawState.init();
+    let draw_state = &mut draw_state;
 
-        program |> ugli.set_uniform("u_pos", pos, draw_state);
-        program |> ugli.set_uniform("u_half_size", half_size, draw_state);
-        program |> ugli.set_uniform("u_view_matrix", camera.view_matrix, draw_state);
-        program |> ugli.set_uniform("u_projection_matrix", camera.projection_matrix, draw_state);
-        program |> ugli.set_uniform("u_texture", texture, draw_state);
-        program |> ugli.set_vertex_data_source(&ctx.quad.buffer);
-        gl.draw_arrays(gl.TRIANGLE_FAN, 0, 4);
-    )
+    program |> ugli.set_uniform("u_pos", pos, draw_state);
+    program |> ugli.set_uniform("u_half_size", half_size, draw_state);
+    program |> ugli.set_uniform("u_view_matrix", camera^.view_matrix, draw_state);
+    program |> ugli.set_uniform("u_projection_matrix", camera^.projection_matrix, draw_state);
+    program |> ugli.set_uniform("u_texture", texture, draw_state);
+    program |> ugli.set_vertex_data_source(&ctx^.quad.buffer);
+    gl.draw_arrays(gl.TRIANGLE_FAN, 0, 4);
 );
 
 const load_texture = (path :: &str, filter :: ugli.Filter) -> ugli.Texture => (
