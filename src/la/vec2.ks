@@ -1,3 +1,13 @@
+const Vec2i = newtype { Int32, Int32 };
+
+impl Vec2i as module = (
+    module:
+
+    const into_vec2 = (self :: Vec2i) -> Vec2 => (
+        { Int32_to_Float32(self.0), Int32_to_Float32(self.1) }
+    );
+);
+
 const Vec2 = newtype { Float32, Float32 };
 
 impl Vec2 as module = (

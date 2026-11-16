@@ -227,7 +227,7 @@ const Event = newtype (
 const convert = (event :: SDL.Event) -> Option.t[Event] => with_return (
     if @native "\(event).type == SDL_EVENT_MOUSE_BUTTON_DOWN" then (
         let pos :: Vec2 = { @native "\(event).button.x", @native "\(event).button.y" };
-        let window_size = geng.get_window_size();
+        let window_size = geng.get_window_size() |> Vec2i.into_vec2;
         let pos = { pos.0, window_size.1 - 1 - pos.1 };
         :Some :PointerPress { .pos }
         # let button = MouseButton.from_raw(@native "\(event).button.button")
@@ -235,7 +235,7 @@ const convert = (event :: SDL.Event) -> Option.t[Event] => with_return (
         # :Some :MousePress { .button }
     ) else if @native "\(event).type == SDL_EVENT_MOUSE_BUTTON_UP" then (
         let pos :: Vec2 = { @native "\(event).button.x", @native "\(event).button.y" };
-        let window_size = geng.get_window_size();
+        let window_size = geng.get_window_size() |> Vec2i.into_vec2;
         let pos = { pos.0, window_size.1 - 1 - pos.1 };
         :Some :PointerRelease { .pos }
         # let button = MouseButton.from_raw(@native "\(event).button.button")
@@ -244,7 +244,7 @@ const convert = (event :: SDL.Event) -> Option.t[Event] => with_return (
     ) else if @native "\(event).type == SDL_EVENT_QUIT" then (
         :Some :Quit
     ) else if @native "\(event).type == SDL_EVENT_MOUSE_MOTION" then (
-        let window_size = geng.get_window_size();
+        let window_size = geng.get_window_size() |> Vec2i.into_vec2;
         :Some :MouseMove {
             .position = {
                 @native "\(event).motion.x",

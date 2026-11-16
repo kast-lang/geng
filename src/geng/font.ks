@@ -152,12 +152,12 @@ impl Font as module = (
             :Nearest,
         );
         let mut chars = OrdMap.new();
-        let tile_size_uv = Vec2.vdiv(config.tile_size, texture.size);
+        let tile_size_uv = Vec2.vdiv(config.tile_size, texture.size |> Vec2i.into_vec2);
         let uv_rect = (tile_pos :: Vec2) -> UvRect => {
-            .pos = Vec2.vdiv(Vec2.vmul(tile_pos, config.tile_size), texture.size),
+            .pos = Vec2.vdiv(Vec2.vmul(tile_pos, config.tile_size), texture.size |> Vec2i.into_vec2),
             .size = tile_size_uv,
         };
-        let texture_size_tiles = Vec2.vdiv(texture.size, config.tile_size);
+        let texture_size_tiles = Vec2.vdiv(texture.size |> Vec2i.into_vec2, config.tile_size);
         let add_c = (c :: Char, tile_pos :: Vec2) => (
             let tile_pos :: Vec2 = {
                 tile_pos.0,

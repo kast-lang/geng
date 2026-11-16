@@ -333,6 +333,10 @@ const create_texture = () -> Texture => (
     texture
 );
 
+const delete_texture = (texture :: Texture) => (
+    @native "glDeleteTextures(1, \(&texture))";
+);
+
 const bind_texture = (
     target :: GLenum,
     texture :: Texture,
@@ -392,6 +396,79 @@ const pixel_store_bool = (
     @native "glPixelStorei(\(pname), \(value))";
 );
 
+const create_renderbuffer = () -> Renderbuffer => (
+    let mut renderbuffer = @native "#uninitialized";
+    @native "glGenRenderbuffers(1, \(&mut renderbuffer))";
+    renderbuffer
+);
+
+const delete_renderbuffer = (renderbuffer :: Renderbuffer) => (
+    @native "glDeleteRenderbuffers(1, \(&renderbuffer))";
+);
+
+const bind_renderbuffer = (target :: GLenum, renderbuffer :: Renderbuffer) => (
+    @native "glBindRenderbuffer(\(target), \(renderbuffer))";
+);
+
+const renderbuffer_storage = (
+    target :: GLenum,
+    internal_format :: GLenum,
+    width :: GLsizei,
+    height :: GLsizei,
+) => (
+    @native ''glRenderbufferStorage(
+        \(target),
+        \(internal_format),
+        \(width),
+        \(height))'';
+);
+
+const create_framebuffer = () -> Framebuffer => (
+    let mut framebuffer = @native "#uninitialized";
+    @native "glGenFramebuffers(1, \(&mut framebuffer))";
+    framebuffer
+);
+
+const delete_framebuffer = (framebuffer :: Framebuffer) => (
+    @native "glDeleteFramebuffers(1, \(&framebuffer))";
+);
+
+const bind_framebuffer = (target :: GLenum, framebuffer :: Framebuffer) => (
+    @native "glBindFramebuffer(\(target), \(framebuffer))";
+);
+
+const framebuffer_texture_2d = (
+    target :: GLenum,
+    attachment :: GLenum,
+    textarget :: GLenum,
+    texture :: Texture,
+    level :: GLint,
+) => (
+    @native ''glFramebufferTexture2D(
+        \(target),
+        \(attachment),
+        \(textarget),
+        \(texture),
+        \(level))'';
+);
+
+const framebuffer_renderbuffer = (
+    target :: GLenum,
+  	attachment :: GLenum,
+  	renderbuffertarget :: GLenum,
+  	renderbuffer :: Renderbuffer,
+) => (
+    @native ''glFramebufferRenderbuffer(
+        \(target),
+        \(attachment),
+        \(renderbuffertarget),
+        \(renderbuffer))'';
+);
+
+const check_framebuffer_status = (target :: GLenum) -> GLenum => (
+    @native "glCheckFramebufferStatus(\(target))"
+);
+
 const Buffer = @opaque_type "GLuint";
 
 const ActiveInfo = newtype {
@@ -402,3 +479,5 @@ const ActiveInfo = newtype {
 const AttribLocation = @opaque_type "GLint";
 const UniformLocation = @opaque_type "GLint";
 const Texture = @opaque_type "GLuint";
+const Renderbuffer = @opaque_type "GLuint";
+const Framebuffer = @opaque_type "GLuint";

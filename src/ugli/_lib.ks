@@ -7,7 +7,13 @@ use std.collections.OrdMap;
 
 module:
 
-const init = () => (
+const ContextT = newtype {
+    .framebuffer :: Framebuffer,
+};
+
+const Context = @context ContextT;
+
+const init = () -> ContextT => (
     @native "#include <GL/glew.h>";
     let err :: gl.GLenum = @native "glewInit()";
     if @native "\(err) != GLEW_OK" then (
@@ -16,7 +22,6 @@ const init = () => (
     );
     gl.enable(gl.DEPTH_TEST);
     @native "glPixelStorei(GL_UNPACK_ALIGNMENT, 1)";
-
     @native ''
         {
             GLuint vao;
@@ -24,8 +29,13 @@ const init = () => (
             glBindVertexArray(vao);
         }
     '';
-
     check_error();
+    {
+        .framebuffer = {
+            .handle = @native "0",
+            .size = { 1, 1 },
+        },
+    }
 );
 
 const check_error = () => with_return (
@@ -209,7 +219,7 @@ impl Program as module = (
 );
 
 const Texture = newtype {
-    .size :: Vec2,
+    .size :: Vec2i,
     .handle :: gl.Texture,
 };
 
@@ -234,12 +244,63 @@ impl Wrap as module = (
     );
 );
 
-const Vec2i = newtype { Int32, Int32 };
 const Color = Vec4;
 
 impl Texture as module = (
     module:
 
+    const drop = (self :: Texture) => (
+        gl.delete_texture(self.handle);
+    );
+
+    const new_uninitialized = (
+        { width, height } :: Vec2i,
+        filter :: Filter,
+    ) -> Texture => (
+        let handle = gl.create_texture();
+        gl.bind_texture(gl.TEXTURE_2D, handle);
+        gl.tex_parameter_i(
+            gl.TEXTURE_2D,
+            gl.TEXTURE_MIN_FILTER,
+            UInt32_to_Int32(gl.LINEAR),
+        );
+        match filter with (
+            | :Linear => ()
+            | :Nearest => (
+                gl.tex_parameter_i(
+                    gl.TEXTURE_2D,
+                    gl.TEXTURE_MAG_FILTER,
+                    UInt32_to_Int32(gl.NEAREST),
+                );
+            )
+        );
+        gl.tex_image_2d(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            width,
+            height,
+            0,
+            gl.RGBA,
+            gl.FLOAT,
+            @native "NULL",
+        );
+        # gl.generate_mipmap(gl.TEXTURE_2D);
+        gl.tex_parameter_i(
+            gl.TEXTURE_2D,
+            gl.TEXTURE_WRAP_S,
+            UInt32_to_Int32(gl.CLAMP_TO_EDGE),
+        );
+        gl.tex_parameter_i(
+            gl.TEXTURE_2D,
+            gl.TEXTURE_WRAP_T,
+            UInt32_to_Int32(gl.CLAMP_TO_EDGE),
+        );
+        {
+            .size = { width, height },
+            .handle,
+        }
+    );
     const new_with = (
         { width, height } :: Vec2i,
         color :: Vec2i -> Color,
@@ -291,10 +352,7 @@ impl Texture as module = (
             UInt32_to_Int32(gl.CLAMP_TO_EDGE),
         );
         {
-            .size = {
-                Int32_to_Float32(width),
-                Int32_to_Float32(height),
-            },
+            .size = { width, height },
             .handle,
         }
     );
@@ -350,10 +408,7 @@ impl Texture as module = (
             UInt32_to_Int32(gl.CLAMP_TO_EDGE),
         );
         {
-            .size = {
-                Int32_to_Float32(width),
-                Int32_to_Float32(height),
-            },
+            .size = { width, height },
             .handle,
         }
     );
@@ -702,3 +757,118 @@ impl Vec4 as VertexAttribute = {
         RawData.new(data)
     ),
 };
+
+const Framebuffer = newtype {
+    .handle :: gl.Framebuffer,
+    .size :: Vec2i,
+};
+
+const FramebufferColorAttachment = newtype (
+    | :None
+    | :Texture &mut Texture
+);
+
+const FramebufferDepthAttachment = newtype (
+    | :None
+    | :Renderbuffer &mut Renderbuffer
+);
+
+impl Framebuffer as module = (
+    module:
+
+    const render_into = (self :: &mut Framebuffer, f :: () -> ()) => (
+        let saved = (@current Context).framebuffer;
+        gl.bind_framebuffer(gl.FRAMEBUFFER, self^.handle);
+        gl.viewport(0, 0, self^.size.0, self^.size.1);
+        (@current Context).framebuffer = self^;
+        @defer (
+            (@current Context).framebuffer = saved;
+            gl.bind_framebuffer(gl.FRAMEBUFFER, saved.handle);
+            gl.viewport(0, 0, saved.size.0, saved.size.1);
+        );
+        f();
+    );
+
+    const new = (
+        .color :: FramebufferColorAttachment,
+        .depth :: FramebufferDepthAttachment,
+    ) -> Framebuffer => (
+        let mut size = :None;
+        let set_size = value => (
+            match size with (
+                | :None => (
+                    size = :Some value;
+                )
+                | :Some size => (
+                    if size.0 != value.0 or size.1 != value.1 then (
+                        panic("attachments of different sizes");
+                    );
+                )
+            );
+        );
+        match color with (
+            | :None => ()
+            | :Texture texture => set_size(texture^.size)
+        );
+        match depth with (
+            | :None => ()
+            | :Renderbuffer renderbuffer => set_size(renderbuffer^.size)
+        );
+        let size = size |> Option.unwrap_or_else(() => panic("no attachments"));
+        let handle = gl.create_framebuffer();
+        let mut framebuffer = { .handle, .size };
+        render_into(&mut framebuffer, () => (
+            match color with (
+                | :None => ()
+                | :Texture texture => (
+                    gl.framebuffer_texture_2d(
+                        gl.FRAMEBUFFER,
+                        gl.COLOR_ATTACHMENT0,
+                        gl.TEXTURE_2D,
+                        texture^.handle,
+                        0,
+                    );
+                )
+            );
+            match depth with (
+                | :None => ()
+                | :Renderbuffer renderbuffer => (
+                    gl.framebuffer_renderbuffer(
+                        gl.FRAMEBUFFER,
+                        gl.DEPTH_ATTACHMENT,
+                        gl.RENDERBUFFER,
+                        renderbuffer^.handle,
+                    );
+                )
+            );
+            if gl.check_framebuffer_status(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE then (
+                panic("framebuffer incomplete");
+            );
+        ));
+        framebuffer
+    );
+
+    const drop = (self :: Framebuffer) => (
+        gl.delete_framebuffer(self.handle);
+    );
+);
+
+const Renderbuffer = newtype {
+    .handle :: gl.Renderbuffer,
+    .size :: Vec2i,
+};
+
+impl Renderbuffer as module = (
+    module:
+
+    const new = (size :: Vec2i, format :: gl.GLenum) -> Renderbuffer => (
+        let handle = gl.create_renderbuffer();
+        gl.bind_renderbuffer(gl.RENDERBUFFER, handle);
+        gl.renderbuffer_storage(gl.RENDERBUFFER, format, size.0, size.1);
+        { .handle, .size }
+    );
+
+    const drop = (self :: Renderbuffer) => (
+        gl.delete_renderbuffer(self.handle);
+    );
+);

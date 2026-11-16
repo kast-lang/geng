@@ -24,6 +24,7 @@ const ContextT = newtype {
         .buffer :: ugli.VertexBuffer.t[Vertex],
     },
     .font :: Font,
+    .ugli :: ugli.ContextT,
 };
 const Context = @context ContextT;
 
@@ -74,7 +75,7 @@ const init = (...options :: Options) -> ContextT => (
     SDL.GL.SetSwapInterval(if options.vsync then 1 else 0);
     log!("Created GL context");
 
-    ugli.init();
+    let ugli_context = ugli.init();
     log!("Initialized ugli");
 
     let quad = {
@@ -115,6 +116,7 @@ const init = (...options :: Options) -> ContextT => (
     let font = Font.load(&format!("\(assets_path())/font") |> as_str);
     ugli.check_error();
     {
+        .ugli = ugli_context,
         .window,
         .sdl_gl_context,
         .gl_context = (),
@@ -174,10 +176,10 @@ const toggle_fullscreen = () => (
     set_fullscreen(not is_fullscreen());
 );
 
-const get_window_size = () -> Vec2 => (
+const get_window_size = () -> Vec2i => (
     let ref ctx = @current Context;
     let { width, height } = SDL.GetWindowSize(ctx^.window);
-    { Int32_to_Float32(width), Int32_to_Float32(height) }
+    { width, height }
 );
 
 const time_since_start = () -> Float32 => (
@@ -189,6 +191,7 @@ const await_next_frame = () => (
     let ref ctx = @current Context;
     SDL.GL.SwapWindow(ctx^.window);
     let { width, height } = SDL.GetWindowSize(ctx^.window);
+    (@current ugli.Context).framebuffer.size = { width, height };
     gl.viewport(0, 0, width, height);
 );
 
@@ -218,6 +221,7 @@ const run = [G :: Type] (...options :: Options) => (
             let mut input = geng.input.init();
             let mut audio = geng.audio.init();
             with gl.Context = geng_ctx.gl_context;
+            with ugli.Context = geng_ctx.ugli;
             with geng.Context = geng_ctx;
             with geng.input.Context = input;
             with geng.audio.Context = audio;
@@ -227,6 +231,7 @@ const run = [G :: Type] (...options :: Options) => (
             audio = @current geng.audio.Context;
             input = @current geng.input.Context;
             geng_ctx = @current geng.Context;
+            geng_ctx.ugli = @current ugli.Context;
             geng_ctx.gl_context = @current gl.Context;
             {
                 .game,
@@ -238,6 +243,7 @@ const run = [G :: Type] (...options :: Options) => (
         ),
         .iterate = self => (
             with gl.Context = self^.geng_ctx.gl_context;
+            with ugli.Context = self^.geng_ctx.ugli;
             with geng.Context = self^.geng_ctx;
             with geng.input.Context = self^.input;
             with geng.audio.Context = self^.audio;
@@ -255,12 +261,14 @@ const run = [G :: Type] (...options :: Options) => (
             self^.audio = @current geng.audio.Context;
             self^.input = @current geng.input.Context;
             self^.geng_ctx = @current geng.Context;
+            self^.geng_ctx.ugli = @current ugli.Context;
             self^.geng_ctx.gl_context = @current gl.Context;
             :Continue
         ),
         .event = (self, &event) => (
-            with geng.Context = self^.geng_ctx;
             with gl.Context = self^.geng_ctx.gl_context;
+            with ugli.Context = self^.geng_ctx.ugli;
+            with geng.Context = self^.geng_ctx;
             with geng.input.Context = self^.input;
             with geng.audio.Context = self^.audio;
             let result = with_return (
@@ -276,13 +284,15 @@ const run = [G :: Type] (...options :: Options) => (
             self^.audio = @current geng.audio.Context;
             self^.input = @current geng.input.Context;
             self^.geng_ctx = @current geng.Context;
+            self^.geng_ctx.ugli = @current ugli.Context;
             self^.geng_ctx.gl_context = @current gl.Context;
             result
         ),
         .quit = (mut self, result) => (
             let self = &mut self;
-            with geng.Context = self^.geng_ctx;
             with gl.Context = self^.geng_ctx.gl_context;
+            with ugli.Context = self^.geng_ctx.ugli;
+            with geng.Context = self^.geng_ctx;
             with geng.input.Context = self^.input;
             with geng.audio.Context = self^.audio;
             geng.deinit();
@@ -290,6 +300,7 @@ const run = [G :: Type] (...options :: Options) => (
             self^.audio = @current geng.audio.Context;
             self^.input = @current geng.input.Context;
             self^.geng_ctx = @current geng.Context;
+            self^.geng_ctx.ugli = @current ugli.Context;
             self^.geng_ctx.gl_context = @current gl.Context;
         ),
     };
