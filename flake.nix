@@ -7,14 +7,16 @@
     kast.url = "github:kast-lang/kast/bootstrap-ocaml";
     flake-utils.url = "github:numtide/flake-utils";
     nix-filter.url = "github:numtide/nix-filter";
+    tcc-overlay.url = "github:vesdev/tcc-overlay/7d80aa0898c8c78536fb13881b29abd751644d30";
   };
 
   outputs = inputs:
     inputs.flake-utils.lib.eachDefaultSystem (system:
       let
         nix-filter = inputs.nix-filter.lib;
+        overlays = [ inputs.tcc-overlay.overlays.default ];
         pkgs-25-11 = import inputs.nixpkgs-25-11 { inherit system; };
-        pkgs = import inputs.nixpkgs { inherit system; };
+        pkgs = import inputs.nixpkgs { inherit system overlays; };
         emscripten = pkgs-25-11.emscripten;
         kast = inputs.kast.packages.${system}.default;
         kast-c-runtime = inputs.kast.packages.${system}.c-runtime;
@@ -100,7 +102,7 @@
           just
           caddy
           clang
-          tinycc
+          tcc
           emscripten
         ];
       in
