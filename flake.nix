@@ -147,6 +147,10 @@
                   systemd-run --user --scope -p MemoryMax=10G \
                     rlwrap ${kast}/bin/kast "$@"
                 '')
+                (pkgs.writeShellScriptBin "geng" ''
+                  export GENG_PATH="$(pwd)"
+                  just "$@"
+                '')
                 rlwrap
                 nixfmt
               ] ++ compilers ++ c_libs;

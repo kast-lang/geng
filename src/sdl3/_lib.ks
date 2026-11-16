@@ -165,7 +165,7 @@ const FlipSurface = (surface :: &mut Surface, mode :: FlipMode) => (
 
 const IOStream = @opaque_type "SDL_IOStream*";
 
-const IOFromConstMem = (data :: Slice.t[Byte]) => (
+const IOFromConstMem = (data :: Slice.t[Byte]) -> IOStream => (
     let stream = @native "SDL_IOFromConstMem(\(data).array, \(data).length)";
     if @native "\(stream) == NULL" then (
         throw_error("SDL_IOFromConstMem");
@@ -187,7 +187,7 @@ const IMG = (
         surface
     );
 
-    const Load_IO = (src :: IOStream, closeio :: Bool) => (
+    const Load_IO = (src :: IOStream, closeio :: Bool) -> Surface => (
         let surface = @native "IMG_Load_IO(\(src), \(closeio))";
         if @native "\(surface) == NULL" then (
             throw_error("IMG_Load_IO");
@@ -195,7 +195,7 @@ const IMG = (
         surface
     );
 
-    const LoadTyped_IO = (src :: IOStream, closeio :: Bool, @"type" :: &str) => (
+    const LoadTyped_IO = (src :: IOStream, closeio :: Bool, @"type" :: &str) -> Surface => (
         let type_c = C_String.from_str(@"type");
         @defer C_String.drop(type_c);
         let surface = @native "IMG_LoadTyped_IO(\(src), \(closeio), \(type_c))";
