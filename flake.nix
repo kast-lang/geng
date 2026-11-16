@@ -7,7 +7,7 @@
     kast.url = "github:kast-lang/kast/bootstrap-ocaml";
     flake-utils.url = "github:numtide/flake-utils";
     nix-filter.url = "github:numtide/nix-filter";
-    tcc-overlay.url = "github:vesdev/tcc-overlay/7d80aa0898c8c78536fb13881b29abd751644d30";
+    tcc-overlay.url = "github:vesdev/tcc-overlay";
   };
 
   outputs = inputs:
@@ -102,7 +102,7 @@
           just
           caddy
           clang
-          tcc
+          tinycc
           emscripten
         ];
       in
